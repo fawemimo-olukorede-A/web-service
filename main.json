@@ -1,0 +1,132 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.20.4.51522",
+      "templateHash": "10758709681812531764"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2022-09-01",
+      "name": "bicep-rg-cb",
+      "location": "[parameters('location')]"
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "bicep-app-plan-cb",
+      "resourceGroup": "bicep-rg-cb",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/resourceGroups', 'bicep-rg-cb'), '2022-09-01', 'full').location]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.20.4.51522",
+              "templateHash": "2164519967120166579"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2022-09-01",
+              "name": "bicep-app-plan-cb ",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "F1",
+                "capacity": 1
+              }
+            }
+          ],
+          "outputs": {
+            "appservicePlanId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Web/serverfarms', 'bicep-app-plan-cb ')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'bicep-rg-cb')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "bicep-webapp-cb",
+      "resourceGroup": "bicep-rg-cb",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/resourceGroups', 'bicep-rg-cb'), '2022-09-01', 'full').location]"
+          },
+          "appServicePlanId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'bicep-rg-cb'), 'Microsoft.Resources/deployments', 'bicep-app-plan-cb'), '2022-09-01').outputs.appservicePlanId.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.20.4.51522",
+              "templateHash": "12449788191021029531"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "appServicePlanId": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2022-09-01",
+              "name": "bicep-webapp-cb",
+              "location": "[parameters('location')]",
+              "properties": {
+                "serverFarmId": "appServicePlan.id"
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'bicep-rg-cb'), 'Microsoft.Resources/deployments', 'bicep-app-plan-cb')]",
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'bicep-rg-cb')]"
+      ]
+    }
+  ]
+}
